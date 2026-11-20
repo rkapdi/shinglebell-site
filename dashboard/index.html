@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shinglebell Dashboard</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=DM+Mono:wght@400;500&family=Hanken+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <span class="mark"><i></i>Shinglebell</span>
+    <div class="who"><span id="client-name"></span> <button id="sign-out" class="link" type="button" hidden>Sign out</button></div>
+  </div>
+</header>
+
+<div id="example-banner" class="banner" hidden>Example data, not a client result.</div>
+
+<main class="wrap">
+  <section id="signin" class="card signin" hidden>
+    <h1>Your dashboard</h1>
+    <p>Enter the email address we set up for you. We'll send a sign-in link.</p>
+    <form id="signin-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <button class="btn" type="submit">Send the link</button>
+    </form>
+    <p id="signin-msg" class="fine" role="status"></p>
+  </section>
+
+  <section id="setup" class="card" hidden>
+    <h1>Not connected yet</h1>
+    <p>This dashboard has no database settings. Fill in <code>dashboard/config.js</code>, or open it with <code>?example=1</code> to see it with example data.</p>
+  </section>
+
+  <div id="app" hidden>
+    <div class="head">
+      <h1 id="month-title">This month</h1>
+      <div><a class="link" id="statement-link" href="statement.html">Monthly statement</a> &nbsp; <label class="month">Month <select id="month"></select></label></div>
+    </div>
+
+    <section aria-labelledby="g-title">
+      <h2 id="g-title" class="kicker">Guarantee</h2>
+      <div class="grid g3" id="guarantee"></div>
+    </section>
+
+    <section aria-labelledby="k-title">
+      <h2 id="k-title" class="kicker">Phones</h2>
+      <div class="grid g4" id="phones"></div>
+    </section>
+
+    <section aria-labelledby="l-title">
+      <h2 id="l-title" class="kicker">New leads</h2>
+      <div class="grid g4" id="leads"></div>
+    </section>
+
+    <section aria-labelledby="p-title">
+      <h2 id="p-title" class="kicker">Pipeline</h2>
+      <div class="grid g3" id="pipeline"></div>
+      <p class="fine" id="pipeline-note"></p>
+    </section>
+
+    <section aria-labelledby="j-title" id="jobs-section" hidden>
+      <h2 id="j-title" class="kicker">Mark jobs won or lost</h2>
+      <p class="fine">Inspections with no outcome yet, newest first. Marking one won (with the contract price) or lost keeps your signed revenue and pipeline honest. If your CRM reports jobs to us, mark them there instead.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Booked</th><th>Homeowner</th><th>Inspection</th><th>Outcome</th></tr></thead>
+          <tbody id="jobs"></tbody>
+        </table>
+      </div>
+      <p id="jobs-msg" class="fine" role="status"></p>
+    </section>
+
+    <section aria-labelledby="a-title">
+      <h2 id="a-title" class="kicker">Latest activity</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>When</th><th>What</th><th>Outcome</th><th>Detail</th></tr></thead>
+          <tbody id="activity"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <p id="error" class="error" role="alert" hidden></p>
+</main>
+
+<script src="config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
