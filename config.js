@@ -3,9 +3,10 @@ window.SITE = {
   // Business name. Shown in the header, footer and page titles.
   brand: "Shinglebell",
 
-  // Calendly event link, e.g. "https://calendly.com/your-handle/missed-revenue-audit-review".
+  // Cal.com event link, e.g. "https://cal.com/your-handle/missed-jobs-check" (or just
+  // "your-handle/missed-jobs-check").
   // While this is empty the booking section shows a "not connected" notice instead of a calendar.
-  calendlyUrl: "",
+  calLink: "https://cal.com/declan-mercer-csek4v/missed-jobs-check",
 
   // Meta pixel ID (digits only). Empty = no pixel is loaded and nothing is tracked.
   metaPixelId: "",
@@ -23,8 +24,8 @@ window.SITE = {
   // Force one for a preview with ?h=a or ?h=b.
   headlineTest: false,
 
-  // The revenue answer tapped on the page is prefilled into Calendly so nobody answers it twice.
-  // "a3" means "the 3rd custom question on the Calendly event". Keep revenue as question 3,
-  // or change this to match.
-  revenueAnswerKey: "a3",
+  // The revenue answer tapped on the page is prefilled into the Cal.com booking form so nobody
+  // answers it twice. This is the "identifier" of the revenue question on the Cal.com event.
+  // Make that question a short-text question: a dropdown only prefills on an exact match.
+  revenueField: "revenue",
 };

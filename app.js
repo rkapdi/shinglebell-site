@@ -73,45 +73,67 @@
   var cal = $("cal");
   var picks = document.querySelectorAll(".pick");
 
-  function loadCalendly(done) {
-    if (window.Calendly) return done();
-    var css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = "https://assets.calendly.com/assets/external/widget.css";
-    document.head.appendChild(css);
-    var js = document.createElement("script");
-    js.src = "https://assets.calendly.com/assets/external/widget.js";
-    js.onload = done;
-    js.onerror = function () {
-      cal.innerHTML = '<p class="notice"><b>The calendar didn\'t load.</b> Check your connection and tap your answer again.</p>';
-    };
-    document.head.appendChild(js);
+  // Accepts "handle/event" or the full "https://cal.com/handle/event" link.
+  function calLink() {
+    var m = /^(?:https:\/\/(?:app\.)?cal\.com\/)?([\w.-]+\/[\w.-]+)\/?$/.exec((cfg.calLink || "").trim());
+    return m ? m[1] : "";
+  }
+
+  // Cal.com's own embed loader. It queues calls until embed.js has loaded.
+  function loadCal() {
+    if (window.Cal) return;
+    /* eslint-disable */
+    (function (C, A, L) { var p = function (a, ar) { a.q.push(ar); }; var d = C.document; C.Cal = C.Cal || function () { var cal = C.Cal; var ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; var s = d.createElement("script"); s.src = A; s.onerror = function () { calFailed(); }; d.head.appendChild(s); cal.loaded = true; } if (ar[0] === L) { var api = function () { p(api, arguments); }; var namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+    /* eslint-enable */
+    window.Cal("init", "audit", { origin: "https://app.cal.com" });
+    // Booked: tell Meta. This is the event the campaign optimizes for.
+    // Cal.com has sent this under two names; listen for both and count it once.
+    ["bookingSuccessful", "bookingSuccessfulV2"].forEach(function (action) {
+      window.Cal.ns.audit("on", { action: action, callback: booked });
+    });
+  }
+
+  function calFailed() {
+    window.Cal = undefined;
+    cal.innerHTML = '<p class="notice"><b>The calendar didn\'t load.</b> Check your connection and tap your answer again.</p>';
+  }
+
+  var bookedSent = false;
+  function booked() {
+    if (bookedSent) return;
+    bookedSent = true;
+    track("track", "Schedule", { content_name: "Missed-Jobs Check", headline: variant });
   }
 
   function showCalendar(band) {
     cal.hidden = false;
-    if (!/^https:\/\/calendly\.com\//.test(cfg.calendlyUrl || "")) {
-      cal.innerHTML = '<p class="notice"><b>Calendar not connected yet.</b><br>Set calendlyUrl in site/config.js and the booking calendar appears here. Answer recorded: ' + band + ".</p>";
+    var link = calLink();
+    if (!link) {
+      cal.innerHTML = '<p class="notice"><b>Calendar not connected yet.</b><br>Set calLink in site/config.js and the booking calendar appears here. Answer recorded: ' + band + ".</p>";
       return;
     }
     cal.innerHTML = "";
-    var answers = {};
-    answers[cfg.revenueAnswerKey || "a3"] = band;
-    loadCalendly(function () {
-      window.Calendly.initInlineWidget({
-        url: cfg.calendlyUrl + (cfg.calendlyUrl.indexOf("?") > -1 ? "&" : "?") + "hide_gdpr_banner=1",
-        parentElement: cal,
-        prefill: { customAnswers: answers },
-        // Which ad and which headline sent this booking shows up on the Calendly invitee record.
-        utm: {
-          utmSource: qs.get("utm_source") || "direct",
-          utmMedium: qs.get("utm_medium") || "",
-          utmCampaign: qs.get("utm_campaign") || "",
-          utmContent: qs.get("utm_content") || "",
-          utmTerm: "headline-" + variant,
-        },
-      });
+    // Everything in config is passed to the Cal.com booking page.
+    // - The revenue answer prefills the booking question with that identifier.
+    // - utm_* and metadata[...] are saved on the booking, so every booking traces back to an
+    //   ad and a headline.
+    var config = { layout: "month_view" };
+    config[cfg.revenueField || "revenue"] = band;
+    var utm = {
+      utm_source: qs.get("utm_source") || "direct",
+      utm_medium: qs.get("utm_medium") || "",
+      utm_campaign: qs.get("utm_campaign") || "",
+      utm_content: qs.get("utm_content") || "",
+      utm_term: "headline-" + variant,
+    };
+    Object.keys(utm).forEach(function (k) {
+      if (!utm[k]) return;
+      config[k] = utm[k];
+      config["metadata[" + k + "]"] = utm[k];
     });
+    loadCal();
+    if (!window.Cal) return;
+    window.Cal.ns.audit("inline", { elementOrSelector: cal, calLink: link, config: config });
     cal.scrollIntoView({ block: "nearest" });
   }
 
@@ -126,11 +148,5 @@
       track("trackCustom", "AuditQualified", { revenue: band, headline: variant });
       showCalendar(band);
     });
-  });
-
-  // ---- booked: tell Meta. This is the event the campaign optimizes for. ---
-  window.addEventListener("message", function (e) {
-    if (e.origin !== "https://calendly.com" || !e.data || e.data.event !== "calendly.event_scheduled") return;
-    track("track", "Schedule", { content_name: "Missed-Revenue Audit", headline: variant });
   });
 })();

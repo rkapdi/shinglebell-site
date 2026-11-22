@@ -119,7 +119,7 @@ h3 { font-weight: 800; font-size: 1.55rem; line-height: 1; margin-bottom: 6px; }
 
 .problem { background: var(--chalk); border-bottom: 1px solid var(--line); }
 
-/* audit list */
+/* check list */
 .checks { list-style: none; margin: 0 0 24px; padding: 0; display: grid; gap: 0; border-top: 2px solid var(--ink); }
 .checks li { display: grid; grid-template-columns: 44px 1fr; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 1.08rem; }
 .checks li::before { content: counter(c, decimal-leading-zero); counter-increment: c; font-family: var(--mono); font-size: 14px; color: var(--hivis); padding-top: 4px; }
