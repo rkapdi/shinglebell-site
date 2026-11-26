@@ -1,2 +1,5 @@
 User-agent: *
-Disallow: /
+Disallow: /dashboard/
+Disallow: /not-a-fit.html
+
+Sitemap: https://shinglebell.com/sitemap.xml
